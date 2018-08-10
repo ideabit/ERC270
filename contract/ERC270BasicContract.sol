@@ -114,6 +114,12 @@ contract ERC270BasicContract is Owned {
     // Mapping from owner to number of owned Fas
     mapping (address => uint256) internal ownedFasCount;
 
+    // Mapping from Fas ID to approved address
+    mapping (uint256 => address) internal FasApprovals;
+
+    // Mapping from owner to operator approvals
+    mapping (address => mapping (address => bool)) internal operatorApprovals;
+
     /**
     * @dev Gets the balance of the specified address
     * @param _owner address to query the balance of
@@ -143,6 +149,140 @@ contract ERC270BasicContract is Owned {
     function exists(uint256 _FasId) public view returns (bool) {
         address owner = FasOwner[_FasId];
         return owner != address(0);
+    }
+
+    /**
+    * @dev Approves another address to transfer the given Fas ID
+    * The zero address indicates there is no approved address.
+    * There can only be one approved address per Fas at a given time.
+    * Can only be called by the Fas owner or an approved operator.
+    * @param _to address to be approved for the given Fas ID
+    * @param _FasId uint256 ID of the Fas to be approved
+    */
+    function approve(address _to, uint256 _FasId) public {
+        address owner = ownerOf(_FasId);
+        require(_to != owner);
+        require(msg.sender == owner || isApprovedForAll(owner, msg.sender));
+
+        FasApprovals[_FasId] = _to;
+        emit Approval(owner, _to, _FasId);
+    }
+
+    /**
+    * @dev Gets the approved address for a Fas ID, or zero if no address set
+    * @param _FasId uint256 ID of the Fas to query the approval of
+    * @return address currently approved for the given Fas ID
+    */
+    function getApproved(uint256 _FasId) public view returns (address) {
+        return FasApprovals[_FasId];
+    }
+
+    /**
+    * @dev Sets or unsets the approval of a given operator
+    * An operator is allowed to transfer all tokens of the sender on their behalf
+    * @param _to operator address to set the approval
+    * @param _approved representing the status of the approval to be set
+    */
+    function setApprovalForAll(address _to, bool _approved) public {
+        require(_to != msg.sender);
+        operatorApprovals[msg.sender][_to] = _approved;
+        emit ApprovalForAll(msg.sender, _to, _approved);
+    }
+
+    /**
+    * @dev Tells whether an operator is approved by a given owner
+    * @param _owner owner address which you want to query the approval of
+    * @param _operator operator address which you want to query the approval of
+    * @return bool whether the given operator is approved by the given owner
+    */
+    function isApprovedForAll(address _owner, address _operator) public view returns (bool) {
+        return operatorApprovals[_owner][_operator];
+    }
+
+    /**
+    * @dev Internal function to clear current approval of a given Fas ID
+    * Reverts if the given address is not indeed the owner of the Fas
+    * @param _owner owner of the Fas
+    * @param _FasId uint256 ID of the Fas to be transferred
+    */
+    function clearApproval(address _owner, uint256 _FasId) internal {
+        require(ownerOf(_FasId) == _owner);
+        if (FasApprovals[_FasId] != address(0)) {
+            FasApprovals[_FasId] = address(0);
+        }
+    }
+
+    /**
+    * @dev Internal function to add a Fas ID to the list of a given address
+    * @param _to address representing the new owner of the given Fas ID
+    * @param _FasId uint256 ID of the Fas to be added to the Fas list of the given address
+    */
+    function addFasTo(address _to, uint256 _FasId) internal {
+        require(FasOwner[_FasId] == address(0));
+        FasOwner[_FasId] = _to;
+        ownedFasCount[_to] = ownedFasCount[_to].add(1);
+    }
+
+    /**
+    * @dev Internal function to remove a Fas ID from the list of a given address
+    * @param _from address representing the previous owner of the given Fas ID
+    * @param _FasId uint256 ID of the Fas to be removed from the Fas list of the given address
+    */
+    function removeFasFrom(address _from, uint256 _FasId) internal {
+        require(ownerOf(_FasId) == _from);
+        ownedFasCount[_from] = ownedFasCount[_from].sub(1);
+        FasOwner[_FasId] = address(0);
+    }
+
+    /**
+    * @dev Returns whether the given spender can transfer a given Fas ID
+    * @param _spender address of the spender to query
+    * @param _FasId uint256 ID of the Fas to be transferred
+    * @return bool whether the msg.sender is approved for the given Fas ID,
+    *  is an operator of the owner, or is the owner of the Fas
+    */
+    function isApprovedOrOwner(address _spender, uint256 _FasId) internal view returns (bool){
+        address owner = ownerOf(_FasId);
+        return (_spender == owner || getApproved(_FasId) == _spender || isApprovedForAll(owner, _spender));
+    }
+
+    /**
+    * @dev Transfers the ownership of a given Fas ID to a specified address
+    * @param _to address to receive the ownership of the given Fas ID
+    * @param _FasId uint256 ID of the Fas to be transferred
+    */
+    function transfer(address _to, uint256 _FasId) public returns (bool){
+        require(isApprovedOrOwner(msg.sender, _FasId));
+        require(_to != address(0));
+
+        clearApproval(msg.sender, _FasId);
+        removeFasFrom(msg.sender, _FasId);
+        addFasTo(_to, _FasId);
+
+        emit Transfer(msg.sender, _to, _FasId);
+
+        return true;
+    }
+
+    /**
+    * @dev Transfers the ownership of a given Fas ID to another address
+    * Requires the msg sender to be the owner, approved, or operator
+    * @param _from current owner of the Fas
+    * @param _to address to receive the ownership of the given Fas ID
+    * @param _FasId uint256 ID of the Fas to be transferred
+    */
+    function transferFrom(address _from, address _to, uint256 _FasId) public returns (bool){
+        require(isApprovedOrOwner(msg.sender, _FasId));
+        require(_from != address(0));
+        require(_to != address(0));
+
+        clearApproval(_from, _FasId);
+        removeFasFrom(_from, _FasId);
+        addFasTo(_to, _FasId);
+
+        emit Transfer(_from, _to, _FasId);
+
+        return true;
     }
 
     // ------------------------------------------------------------------------
