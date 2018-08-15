@@ -24,6 +24,38 @@ library SafeMath {
 }
 
 
+contract ERC270Interface {
+    function name() external view returns (string _name);
+    function FasNum() external view returns (uint256 _FasNum);
+    function createTime() external view returns (uint256 _createTime);
+    function balanceOf(address _owner) public view returns (uint256 _balance);
+    function ownerOf(uint256 _FasId) public view returns (address _owner);
+    function exists(uint256 _FasId) public view returns (bool);
+    function approve(address _to, uint256 _FasId) public;
+    function getApproved(uint256 _FasId) public view returns (address _operator);
+    function setApprovalForAll(address _to, bool _approved) public;
+    function isApprovedForAll(address _owner, address _operator) public view returns (bool);    
+    function transfer(address _to, uint256 _FasId) public returns (bool);
+    function transferFrom(address _from, address _to, uint256 _FasId) public returns (bool);
+
+    event Transfer(
+        address indexed _from,
+        address indexed _to,
+        uint256 indexed _FasId
+    );
+    event Approval(
+        address indexed _owner,
+        address indexed _approved,
+        uint256 indexed _FasId
+    );
+    event ApprovalForAll(
+        address indexed _owner,
+        address indexed _operator,
+        bool _approved
+    );
+}
+
+
 // ----------------------------------------------------------------------------
 // Owned contract
 // ----------------------------------------------------------------------------
@@ -70,17 +102,17 @@ contract ERC270BasicContract is Owned {
     string internal proejct_name;
 
     // Project Fas Number
-    uint internal project_fas_number;
+    uint256 internal project_fas_number;
 
     // Project Create Time
-    uint internal project_create_time;
+    uint256 internal project_create_time;
 
     /**
     * @dev Constructor function
     */
-    constructor(string _project_name, uint _project_fas_number) public {
+    constructor(string _project_name) public {
         proejct_name = _project_name;
-        project_fas_number = _project_fas_number;
+        project_fas_number = 100;
         project_create_time = block.timestamp;
     }
 
@@ -96,7 +128,7 @@ contract ERC270BasicContract is Owned {
     * @dev Gets the project Fas number
     * @return string representing the project Fas number
     */
-    function FasNum() external view returns (uint) {
+    function FasNum() external view returns (uint256) {
         return project_fas_number;
     }
 
@@ -104,7 +136,7 @@ contract ERC270BasicContract is Owned {
     * @dev Gets the project create time
     * @return string representing the project create time
     */
-    function createTime() external view returns (uint) {
+    function createTime() external view returns (uint256) {
         return project_create_time;
     }
 
