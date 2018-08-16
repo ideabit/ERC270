@@ -34,7 +34,8 @@ contract ERC270Interface {
     function approve(address _to, uint256 _FasId) public;
     function getApproved(uint256 _FasId) public view returns (address _operator);
     function setApprovalForAll(address _to, bool _approved) public;
-    function isApprovedForAll(address _owner, address _operator) public view returns (bool);    
+    function isApprovedForAll(address _owner, address _operator) public view returns (bool);
+    function getTransferRecords(uint256 _FasId) public view returns (address[] _preOwners);
     function transfer(address _to, uint256[] _FasId) public;
     function transferFrom(address _from, address _to, uint256[] _FasId) public;
 
@@ -65,16 +66,16 @@ contract Owned {
 
     event OwnershipTransferred(address indexed _from, address indexed _to);
 
+    function Owned() public {
+        project_owner = msg.sender;
+    }
+
     /**
     * @dev Gets the project owner
     * @return string representing the project owner
     */
-    function owner() external view returns (string) {
+    function owner() external view returns (address) {
         return project_owner;
-    }
-
-    function Owned() public {
-        project_owner = msg.sender;
     }
 
     modifier onlyOwner {
@@ -95,7 +96,7 @@ contract Owned {
 }
 
 
-contract ERC270BasicContract is Owned {
+contract ERC270BasicContract is ERC270Interface, Owned {
     using SafeMath for uint256;
 
     // Project Name
@@ -120,7 +121,7 @@ contract ERC270BasicContract is Owned {
             FasOwner[i] = address(0);
             ownedFasCount[address(0)] = ownedFasCount[address(0)].add(1);
 
-            string[1] memory preOwnerList = [address(0)];
+            address[1] memory preOwnerList = [address(0)];
             transferRecords[i] = preOwnerList;
         }
     }
@@ -295,9 +296,9 @@ contract ERC270BasicContract is Owned {
     * @param _FasId uint256 ID of the Fas
     * @return bool record
     */
-    function transferRecords(address _nowOwner, uint256 _FasId) public view returns (bool) {
-        string[] memory preOwnerList = transferRecords[_FasId];
-        string[] memory _preOwnerList = new string[](preOwnerList.length + 1);
+    function transferRecord(address _nowOwner, uint256 _FasId) internal{
+        address[] memory preOwnerList = transferRecords[_FasId];
+        address[] memory _preOwnerList = new address[](preOwnerList.length + 1);
 
         for(uint i = 0; i < _preOwnerList.length; ++i)
         {
@@ -312,8 +313,6 @@ contract ERC270BasicContract is Owned {
         }
 
         transferRecords[_FasId] = _preOwnerList;
-
-        return true;
     }
 
     /**
@@ -335,8 +334,8 @@ contract ERC270BasicContract is Owned {
         {
             require(isApprovedOrOwner(msg.sender, _FasId[i]));
             require(_to != address(0));
-            require(transferRecords(_to, _FasId[i]));
 
+            transferRecord(_to, _FasId[i]);
             removeFasFrom(msg.sender, _FasId[i]);
             addFasTo(_to, _FasId[i]);
 
@@ -357,8 +356,8 @@ contract ERC270BasicContract is Owned {
             require(isApprovedOrOwner(msg.sender, _FasId[i]));
             require(_from != address(0));
             require(_to != address(0));
-            require(transferRecords(_to, _FasId[i]));
 
+            transferRecord(_to, _FasId[i]);
             clearApproval(_from, _FasId[i]);
             removeFasFrom(_from, _FasId[i]);
             addFasTo(_to, _FasId[i]);
