@@ -2,6 +2,23 @@
 
 ## Version : 0.1.0
 
+- [ERC270技术文档](#erc270%E6%8A%80%E6%9C%AF%E6%96%87%E6%A1%A3)
+    - [Version : 0.1.0](#version--010)
+    - [概述](#%E6%A6%82%E8%BF%B0)
+    - [ERC270接口](#erc270%E6%8E%A5%E5%8F%A3)
+        - [Methods](#methods)
+            - [name](#name)
+            - [FasNum](#fasnum)
+            - [owner](#owner)
+            - [createTime](#createtime)
+            - [balanceOf](#balanceof)
+            - [ownerOf](#ownerof)
+            - [exists](#exists)
+            - [getTransferRecords](#gettransferrecords)
+            - [transfer](#transfer)
+        - [Event](#event)
+            - [Transfer](#transfer)
+
 ## 概述
 
 ERC270是一个股权标准协议，通过智能合约，来解决以太坊区块链中的项目股权分配的问题。通过ERC270协议，使用者可以查询项目基本信息以及股权信息，追踪股权转让历史以及转让股权。使用者也可以扩展该协议，与ERC20标准合约结合，增加售卖持有股权，以及依据股权分配情况，分配股权收益等功能。
