@@ -34,6 +34,7 @@ library SafeMath {
 contract ERC270Interface {
     function name() external view returns (string _name);
     function FasNum() external view returns (uint256 _FasNum);
+    function owner() external view returns (address _owner);
     function createTime() external view returns (uint256 _createTime);
     function balanceOf(address _owner) public view returns (uint256 _balance);
     function ownerOf(uint256 _FasId) public view returns (address _owner);
@@ -60,14 +61,6 @@ contract Owned {
 
     function Owned() public {
         project_owner = msg.sender;
-    }
-
-    /**
-    * @dev Gets the project owner
-    * @return string representing the project owner
-    */
-    function owner() external view returns (address) {
-        return project_owner;
     }
 
     modifier onlyOwner {
@@ -128,15 +121,23 @@ contract ERC270BasicContract is ERC270Interface, Owned {
 
     /**
     * @dev Gets the project Fas number
-    * @return string representing the project Fas number
+    * @return uint256 representing the project Fas number
     */
     function FasNum() external view returns (uint256) {
         return project_fas_number;
     }
 
     /**
+    * @dev Gets the project owner
+    * @return address representing the project owner
+    */
+    function owner() external view returns (address) {
+        return project_owner;
+    }
+
+    /**
     * @dev Gets the project create time
-    * @return string representing the project create time
+    * @return uint256 representing the project create time
     */
     function createTime() external view returns (uint256) {
         return project_create_time;
@@ -217,7 +218,7 @@ contract ERC270BasicContract is ERC270Interface, Owned {
     * @return bool whether the msg.sender is approved for the given Fas ID,
     *  is an operator of the owner, or is the owner of the Fas
     */
-    function isOwner(address _spender, uint256 _FasId) public view returns (bool){
+    function isOwner(address _spender, uint256 _FasId) internal view returns (bool){
         address owner = ownerOf(_FasId);
         return (_spender == owner);
     }
