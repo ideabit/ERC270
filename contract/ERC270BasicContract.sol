@@ -118,10 +118,10 @@ contract ERC270BasicContract is ERC270Interface, Owned {
 
         for(uint i = 0; i < project_fas_number; i++)
         {
-            FasOwner[i] = address(0);
-            ownedFasCount[address(0)] = ownedFasCount[address(0)].add(1);
+            FasOwner[i] = project_owner;
+            ownedFasCount[project_owner] = ownedFasCount[project_owner].add(1);
 
-            address[1] memory preOwnerList = [address(0)];
+            address[1] memory preOwnerList = [project_owner];
             transferRecords[i] = preOwnerList;
         }
     }
