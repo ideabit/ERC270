@@ -1,5 +1,12 @@
 pragma solidity ^0.4.21;
-
+/**
+* Version: 0.1.0
+*  The ERC-270 is an Equity Agreement Standard used for smart contracts on Ethereum
+* blockchain for project equity allocation.
+*  The current ERC270 agreement standard version is 0.1.0, which includes the basic 
+* information of the project query, equity creation, confirmation of equity validity,
+* equity transfer, record of equity transfer and other functions.
+*/
 
 library SafeMath {
     function add(uint256 a, uint256 b) internal pure returns (uint256 c) {
@@ -31,28 +38,13 @@ contract ERC270Interface {
     function balanceOf(address _owner) public view returns (uint256 _balance);
     function ownerOf(uint256 _FasId) public view returns (address _owner);
     function exists(uint256 _FasId) public view returns (bool);
-    function approve(address _to, uint256 _FasId) public;
-    function getApproved(uint256 _FasId) public view returns (address _operator);
-    function setApprovalForAll(address _to, bool _approved) public;
-    function isApprovedForAll(address _owner, address _operator) public view returns (bool);
     function getTransferRecords(uint256 _FasId) public view returns (address[] _preOwners);
     function transfer(address _to, uint256[] _FasId) public;
-    function transferFrom(address _from, address _to, uint256[] _FasId) public;
 
     event Transfer(
         address indexed _from,
         address indexed _to,
         uint256 indexed _FasId
-    );
-    event Approval(
-        address indexed _owner,
-        address indexed _approved,
-        uint256 indexed _FasId
-    );
-    event ApprovalForAll(
-        address indexed _owner,
-        address indexed _operator,
-        bool _approved
     );
 }
 
@@ -197,67 +189,6 @@ contract ERC270BasicContract is ERC270Interface, Owned {
     }
 
     /**
-    * @dev Approves another address to transfer the given Fas ID
-    * The zero address indicates there is no approved address.
-    * There can only be one approved address per Fas at a given time.
-    * Can only be called by the Fas owner or an approved operator.
-    * @param _to address to be approved for the given Fas ID
-    * @param _FasId uint256 ID of the Fas to be approved
-    */
-    function approve(address _to, uint256 _FasId) public {
-        address owner = ownerOf(_FasId);
-        require(_to != owner);
-        require(msg.sender == owner || isApprovedForAll(owner, msg.sender));
-
-        FasApprovals[_FasId] = _to;
-        emit Approval(owner, _to, _FasId);
-    }
-
-    /**
-    * @dev Gets the approved address for a Fas ID, or zero if no address set
-    * @param _FasId uint256 ID of the Fas to query the approval of
-    * @return address currently approved for the given Fas ID
-    */
-    function getApproved(uint256 _FasId) public view returns (address) {
-        return FasApprovals[_FasId];
-    }
-
-    /**
-    * @dev Sets or unsets the approval of a given operator
-    * An operator is allowed to transfer all tokens of the sender on their behalf
-    * @param _to operator address to set the approval
-    * @param _approved representing the status of the approval to be set
-    */
-    function setApprovalForAll(address _to, bool _approved) public {
-        require(_to != msg.sender);
-        operatorApprovals[msg.sender][_to] = _approved;
-        emit ApprovalForAll(msg.sender, _to, _approved);
-    }
-
-    /**
-    * @dev Tells whether an operator is approved by a given owner
-    * @param _owner owner address which you want to query the approval of
-    * @param _operator operator address which you want to query the approval of
-    * @return bool whether the given operator is approved by the given owner
-    */
-    function isApprovedForAll(address _owner, address _operator) public view returns (bool) {
-        return operatorApprovals[_owner][_operator];
-    }
-
-    /**
-    * @dev Internal function to clear current approval of a given Fas ID
-    * Reverts if the given address is not indeed the owner of the Fas
-    * @param _owner owner of the Fas
-    * @param _FasId uint256 ID of the Fas to be transferred
-    */
-    function clearApproval(address _owner, uint256 _FasId) internal {
-        require(ownerOf(_FasId) == _owner);
-        if (FasApprovals[_FasId] != address(0)) {
-            FasApprovals[_FasId] = address(0);
-        }
-    }
-
-    /**
     * @dev Internal function to add a Fas ID to the list of a given address
     * @param _to address representing the new owner of the given Fas ID
     * @param _FasId uint256 ID of the Fas to be added to the Fas list of the given address
@@ -286,9 +217,9 @@ contract ERC270BasicContract is ERC270Interface, Owned {
     * @return bool whether the msg.sender is approved for the given Fas ID,
     *  is an operator of the owner, or is the owner of the Fas
     */
-    function isApprovedOrOwner(address _spender, uint256 _FasId) internal view returns (bool){
+    function isOwner(address _spender, uint256 _FasId) public view returns (bool){
         address owner = ownerOf(_FasId);
-        return (_spender == owner || getApproved(_FasId) == _spender || isApprovedForAll(owner, _spender));
+        return (_spender == owner);
     }
 
     /**
@@ -332,7 +263,7 @@ contract ERC270BasicContract is ERC270Interface, Owned {
     function transfer(address _to, uint256[] _FasId) public{
         for(uint i = 0; i < _FasId.length; i++)
         {
-            require(isApprovedOrOwner(msg.sender, _FasId[i]));
+            require(isOwner(msg.sender, _FasId[i]));
             require(_to != address(0));
 
             transferRecord(_to, _FasId[i]);
@@ -340,29 +271,6 @@ contract ERC270BasicContract is ERC270Interface, Owned {
             addFasTo(_to, _FasId[i]);
 
             emit Transfer(msg.sender, _to, _FasId[i]);
-        }
-    }
-
-    /**
-    * @dev Transfers the ownership of a given Fas ID to another address
-    * Requires the msg sender to be the owner, approved, or operator
-    * @param _from current owner of the Fas
-    * @param _to address to receive the ownership of the given Fas ID
-    * @param _FasId uint256 ID of the Fas to be transferred
-    */
-    function transferFrom(address _from, address _to, uint256[] _FasId) public{
-        for(uint i = 0; i < _FasId.length; i++)
-        {
-            require(isApprovedOrOwner(msg.sender, _FasId[i]));
-            require(_from != address(0));
-            require(_to != address(0));
-
-            transferRecord(_to, _FasId[i]);
-            clearApproval(_from, _FasId[i]);
-            removeFasFrom(_from, _FasId[i]);
-            addFasTo(_to, _FasId[i]);
-
-            emit Transfer(_from, _to, _FasId[i]);
         }
     }
 
