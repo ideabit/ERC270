@@ -23,6 +23,7 @@
             - [dividend](#dividend)
         - [Event](#event)
             - [Transfer](#transfer)
+            - [Vote](#vote)
 
 ## 概述
 
@@ -202,6 +203,8 @@ event Transfer(address indexed _from, address indexed _to, uint256 indexed _FasI
 ```
 
 转让Fas时必须触发，包括转让值为0
+
+#### Vote
 
 ``` js
 event Vote(uint256 _voteId);
