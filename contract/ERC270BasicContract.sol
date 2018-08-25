@@ -1,4 +1,4 @@
-pragma solidity ^0.4.21;
+pragma solidity ^0.4.24;
 /**
 * Version: 0.1.0
 *  The ERC-270 is an Equity Agreement Standard used for smart contracts on Ethereum
@@ -31,6 +31,18 @@ library SafeMath {
 }
 
 
+contract ERC20 {
+    function totalSupply() public constant returns (uint);
+    function balanceOf(address tokenOwner) public constant returns (uint balance);
+    function allowance(address tokenOwner, address spender) public constant returns (uint remaining);
+    function transfer(address to, uint tokens) public returns (bool success);
+    function approve(address spender, uint tokens) public returns (bool success);
+    function transferFrom(address from, address to, uint tokens) public returns (bool success);
+    event Transfer(address indexed from, address indexed to, uint tokens);
+    event Approval(address indexed tokenOwner, address indexed spender, uint tokens);
+}
+
+
 contract ERC270Interface {
     function name() external view returns (string _name);
     function FasNum() external view returns (uint256 _FasNum);
@@ -39,13 +51,21 @@ contract ERC270Interface {
     function balanceOf(address _owner) public view returns (uint256 _balance);
     function ownerOf(uint256 _FasId) public view returns (address _owner);
     function exists(uint256 _FasId) public view returns (bool);
+    function allOwnedFas(address _owner) public view returns (uint256[] _allOwnedFasList);
     function getTransferRecords(uint256 _FasId) public view returns (address[] _preOwners);
     function transfer(address _to, uint256[] _FasId) public;
+    function createVote() public payable returns (uint256 _voteId);
+    function vote(uint256 _voteId, uint256 _vote_status_value) public;
+    function getVoteResult(uint256 _voteId) public payable returns (bool result);
+    function dividend(address _token_owner) public;
 
     event Transfer(
         address indexed _from,
         address indexed _to,
         uint256 indexed _FasId
+    );
+    event Vote(
+        uint256 _voteId
     );
 }
 
@@ -59,7 +79,7 @@ contract Owned {
 
     event OwnershipTransferred(address indexed _from, address indexed _to);
 
-    function Owned() public {
+    constructor() public {
         project_owner = msg.sender;
     }
 
@@ -70,13 +90,6 @@ contract Owned {
 
     function transferOwnership(address _new_project_owner) public onlyOwner {
         new_project_owner = _new_project_owner;
-    }
-
-    function acceptOwnership() public {
-        require(msg.sender == new_project_owner);
-        emit OwnershipTransferred(project_owner, new_project_owner);
-        project_owner = new_project_owner;
-        new_project_owner = address(0);
     }
 }
 
@@ -93,13 +106,22 @@ contract ERC270BasicContract is ERC270Interface, Owned {
     // Project Create Time
     uint256 internal project_create_time;
 
+    // Owner Number
+    uint256 internal owners_num;
+
+    // Vote Number
+    uint256 internal votes_num;
+
+    address internal token_0x_address;
+
     /**
     * @dev Constructor function
     */
-    constructor(string _project_name) public {
+    constructor(string _project_name, address _token_0x_address) public {
         proejct_name = _project_name;
         project_fas_number = 100;
         project_create_time = block.timestamp;
+        token_0x_address = _token_0x_address;
 
         for(uint i = 0; i < project_fas_number; i++)
         {
@@ -109,6 +131,13 @@ contract ERC270BasicContract is ERC270Interface, Owned {
             address[1] memory preOwnerList = [project_owner];
             transferRecords[i] = preOwnerList;
         }
+
+        owners_num = 0;
+        votes_num = 0;
+
+        ownerExists[project_owner] = true;
+
+        addOwnerNum(project_owner);
     }
 
     /**
@@ -143,6 +172,11 @@ contract ERC270BasicContract is ERC270Interface, Owned {
         return project_create_time;
     }
 
+    // Mapping from number of owner to owner
+    mapping (uint256 => address) internal ownerNum;
+
+    mapping (address => bool) internal ownerExists;
+
     // Mapping from Fas ID to owner
     mapping (uint256 => address) internal FasOwner;
 
@@ -157,6 +191,19 @@ contract ERC270BasicContract is ERC270Interface, Owned {
 
     // Mapping from Fas ID to previous owners
     mapping (uint256 => address[]) internal transferRecords;
+
+    // Mapping from vote ID to vote result
+    mapping (uint256 => mapping (uint256 => uint256)) internal voteResult;
+
+    function acceptOwnership() public {
+        require(msg.sender == new_project_owner);
+        emit OwnershipTransferred(project_owner, new_project_owner);
+
+        transferForOwnerShip(project_owner, new_project_owner, allOwnedFas(project_owner));
+
+        project_owner = new_project_owner;
+        new_project_owner = address(0);
+    }
 
     /**
     * @dev Gets the balance of the specified address
@@ -174,9 +221,9 @@ contract ERC270BasicContract is ERC270Interface, Owned {
     * @return owner address currently marked as the owner of the given Fas ID
     */
     function ownerOf(uint256 _FasId) public view returns (address) {
-        address owner = FasOwner[_FasId];
-        require(owner != address(0));
-        return owner;
+        address _owner = FasOwner[_FasId];
+        require(_owner != address(0));
+        return _owner;
     }
 
     /**
@@ -185,8 +232,46 @@ contract ERC270BasicContract is ERC270Interface, Owned {
     * @return whether the Fas exists
     */
     function exists(uint256 _FasId) public view returns (bool) {
-        address owner = FasOwner[_FasId];
-        return owner != address(0);
+        address _owner = FasOwner[_FasId];
+        return _owner != address(0);
+    }
+
+    /**
+    * @dev Gets the owner of all owned Fas
+    * @param _owner address to query the balance of
+    * @return the FasId list of owners
+    */
+    function allOwnedFas(address _owner) public view returns (uint256[]) {
+        uint256 _ownedFasCount = ownedFasCount[_owner];
+        uint256 j = 0;
+
+        uint256[] memory _allOwnedFasList = new uint256[](_ownedFasCount);
+
+        for(uint256 i = 0; i < project_fas_number; i++)
+        {
+            if(FasOwner[i] == _owner)
+            {
+                _allOwnedFasList[j] = i;
+                j = j.add(1);
+            }
+        }
+
+        return _allOwnedFasList;
+    }
+
+    /**
+    * @dev Internal function to add Owner Count to the list of a given address
+    * @param _owner address representing the new owner
+    */
+    function addOwnerNum(address _owner) internal {
+        require(ownedFasCount[_owner] != 0);
+
+        if(ownerExists[_owner] == false)
+        {
+            ownerNum[owners_num] = _owner;
+            owners_num = owners_num.add(1);
+            ownerExists[_owner] = true;
+        }
     }
 
     /**
@@ -219,8 +304,8 @@ contract ERC270BasicContract is ERC270Interface, Owned {
     *  is an operator of the owner, or is the owner of the Fas
     */
     function isOwner(address _spender, uint256 _FasId) internal view returns (bool){
-        address owner = ownerOf(_FasId);
-        return (_spender == owner);
+        address _owner = ownerOf(_FasId);
+        return (_spender == _owner);
     }
 
     /**
@@ -258,6 +343,26 @@ contract ERC270BasicContract is ERC270Interface, Owned {
 
     /**
     * @dev Transfers the ownership of a given Fas ID to a specified address
+    * @param _project_owner the address of _project_owner
+    * @param _to address to receive the ownership of the given Fas ID
+    * @param _FasId uint256 ID of the Fas to be transferred
+    */
+    function transferForOwnerShip(address _project_owner,address _to, uint256[] _FasId) internal{
+        for(uint i = 0; i < _FasId.length; i++)
+        {
+            require(isOwner(_project_owner, _FasId[i]));
+            require(_to != address(0));
+
+            transferRecord(_to, _FasId[i]);
+            removeFasFrom(_project_owner, _FasId[i]);
+            addFasTo(_to, _FasId[i]);
+        }
+
+        addOwnerNum(_to);
+    }
+
+    /**
+    * @dev Transfers the ownership of a given Fas ID to a specified address
     * @param _to address to receive the ownership of the given Fas ID
     * @param _FasId uint256 ID of the Fas to be transferred
     */
@@ -272,6 +377,100 @@ contract ERC270BasicContract is ERC270Interface, Owned {
             addFasTo(_to, _FasId[i]);
 
             emit Transfer(msg.sender, _to, _FasId[i]);
+        }
+
+        addOwnerNum(_to);
+    }
+
+    /**
+    * @dev Create a new vote
+    * @return the new vote of ID
+    */
+    function createVote() public payable returns (uint256){
+        votes_num = votes_num.add(1);
+
+        // Vote Agree Number
+        voteResult[votes_num][0] = 0;
+        // Vote Disagree Number
+        voteResult[votes_num][1] = 0;
+        // Vote Abstain Number
+        voteResult[votes_num][2] = 0;
+        // Start Voting Time
+        voteResult[votes_num][3] = block.timestamp;
+
+        emit Vote(votes_num);
+
+        return votes_num;
+    }
+
+    /**
+    * @dev Voting for a given vote ID
+    * @param _voteId the given vote ID
+    * @param _vote_status_value uint256 the vote of status, 0 Agree, 1 Disagree, 2 Abstain
+    */
+    function vote(uint256 _voteId, uint256 _vote_status_value) public{
+        require(_vote_status_value >= 0);
+        require(_vote_status_value <= 2);
+
+        require(block.timestamp <= (voteResult[_voteId][3] + 1 days));
+
+        uint256 temp_Fas_count = balanceOf(msg.sender);
+
+        if(_vote_status_value == 0)
+        {
+            voteResult[_voteId][0] = voteResult[_voteId][0].add(temp_Fas_count);
+        }
+        else if(_vote_status_value == 1)
+        {
+            voteResult[_voteId][1] = voteResult[_voteId][1].add(temp_Fas_count);
+        }
+        else
+        {
+            voteResult[_voteId][2] = voteResult[_voteId][2].add(temp_Fas_count);
+        }
+    }
+
+    /**
+    * @dev Gets the voting restult for a vote ID
+    * @param _voteId the given vote ID
+    * @return the voting restult, true success, false failure
+    */
+    function getVoteResult(uint256 _voteId) public payable returns (bool){
+        require(block.timestamp > (voteResult[_voteId][3] + 1 days));
+
+        uint agree_num = voteResult[_voteId][0];
+        uint disagree_num = voteResult[_voteId][1];
+        uint abstain_num = voteResult[_voteId][2];
+        uint temp_abstain_num = 100 - agree_num - disagree_num;
+
+        if(temp_abstain_num != abstain_num)
+        {
+            voteResult[_voteId][2] = temp_abstain_num;
+        }
+
+        if(agree_num > disagree_num)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    /**
+    * @dev Distribution of benefits
+    * @param _token_owner Divider's Token address
+    */
+    function dividend(address _token_owner) public{
+        uint256 temp_allowance = ERC20(token_0x_address).allowance(_token_owner, address(this));
+
+        for(uint i = 0; i < owners_num; i++)
+        {
+            uint256 temp_Fas_count = balanceOf(ownerNum[i]);
+
+            uint256 _dividend = temp_allowance * temp_Fas_count / 100;
+            ERC20(token_0x_address).transferFrom(_token_owner, ownerNum[i], _dividend);
         }
     }
 

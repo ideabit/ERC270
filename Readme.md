@@ -14,8 +14,13 @@
             - [balanceOf](#balanceof)
             - [ownerOf](#ownerof)
             - [exists](#exists)
+            - [allOwnedFas](#allownedfas)
             - [getTransferRecords](#gettransferrecords)
             - [transfer](#transfer)
+            - [createVote](#createvote)
+            - [vote](#vote)
+            - [getVoteResult](#getvoteresult)
+            - [dividend](#dividend)
         - [Event](#event)
             - [Transfer](#transfer)
 
@@ -36,8 +41,13 @@ contract ERC270Interface {
     function balanceOf(address _owner) public view returns (uint256 _balance);
     function ownerOf(uint256 _FasId) public view returns (address _owner);
     function exists(uint256 _FasId) public view returns (bool);
+    function allOwnedFas(address _owner) public view returns (uint256[] _allOwnedFasList);
     function getTransferRecords(uint256 _FasId) public view returns (address[] _preOwners);
     function transfer(address _to, uint256[] _FasId) public;
+    function createVote() public payable returns (uint256 _voteId);
+    function vote(uint256 _voteId, uint256 _vote_status_value) public;
+    function getVoteResult(uint256 _voteId) public payable returns (bool result);
+    function dividend(address _token_owner) public;
 
     event Transfer(
         address indexed _from,
@@ -117,6 +127,16 @@ function exists(uint256 _FasId) public view returns (bool)
 
 确认Fas ID为`_FasId`的Fas是否为有效Fas
 
+#### allOwnedFas
+
+``` js
+function allOwnedFas(address _owner) public view returns (uint256[] _allOwnedFasList)
+```
+
+返回持有者地位为`_owner`的全部的Fas ID列表 - e.g. `[0,1,2,3,4]`
+
+返回类型 `uint256[]`
+
 #### getTransferRecords
 
 ``` js
@@ -137,6 +157,42 @@ function transfer(address _to, uint256[] _FasId) public
 
 如果发送者无足够的Fas可以转让，则退出该函数
 
+#### createVote
+
+``` js
+function createVote() public payable returns (uint256 _voteId)
+```
+
+创建投票事件，并返回Vote ID `_voteId`
+
+返回类型 `uint256`
+
+#### vote
+
+``` js
+function vote(uint256 _voteId, uint256 _vote_status_value) public
+```
+
+进行投票，根据Vote ID `_voteId`，在该ID的投票事件中进行投票，`_vote_status_value`为`0`代表赞同，为`1`代表反对，为`2`代表弃权
+
+#### getVoteResult
+
+``` js
+function getVoteResult(uint256 _voteId) public payable returns (bool result)
+```
+
+获取投票事件的Vote ID为`_voteId`的投票结果，返回`true`为成功，返回`false`为失败
+
+返回类型 `bool`
+
+#### dividend
+
+``` js
+function dividend(address _token_owner) public
+```
+
+分配红利，从地址为`_token_owner`的地址中，向所有的Fas持有者的地址分配红利
+
 ### Event
 
 #### Transfer
@@ -146,3 +202,9 @@ event Transfer(address indexed _from, address indexed _to, uint256 indexed _FasI
 ```
 
 转让Fas时必须触发，包括转让值为0
+
+``` js
+event Vote(uint256 _voteId);
+```
+
+创建投票事件时必须触发
