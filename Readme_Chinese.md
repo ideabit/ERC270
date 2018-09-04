@@ -1,8 +1,8 @@
-# ERC270 Technical Documentation
+# ERC270技术文档
 
 ## Version : 0.1.5
 
-- [ERC270 technical documentation](#erc270%E6%8A%80%E6%9C%AF%E6%96%87%E6%A1%A3)
+- [ERC270技术文档](#erc270%E6%8A%80%E6%9C%AF%E6%96%87%E6%A1%A3)
     - [Version : 0.1.5](#version--015)
     - [created: 2018-09-04](#created-2018-09-04)
     - [Simple Summary](#simple-summary)
@@ -55,9 +55,9 @@ This standard interface allows any project to tokenize their equity, to be prote
 function name() external view returns (string _name)
 ```
 
-Return the name of the project - e.g. `"MyProject"`
+返回本项目名称 - e.g. `"MyProject"`
 
-Return type `string`
+返回类型 `string`
 
 #### FasNum
 
@@ -65,9 +65,9 @@ Return type `string`
 function FasNum() external view returns (uint256 _FasNum)
 ```
 
-Return the number of total FAS created in the project - e.g. `100`
+返回本项目创建的股权总数量 - e.g. `100`
 
-Return type `uint256`
+返回类型 `uint256`
 
 #### owner
 
@@ -75,9 +75,9 @@ Return type `uint256`
 function owner() external view returns (address _owner)
 ```
 
-Return the address of the project owner - e.g. `0xca35b7d915458ef540ade6068dfe2f44e8fa733c`
+返回本项目所有者地址 - e.g. `0xca35b7d915458ef540ade6068dfe2f44e8fa733c`
 
-Return type `address`
+返回类型 `address`
 
 #### createTime
 
@@ -85,9 +85,9 @@ Return type `address`
 function createTime() external view returns (uint256 _createTime)
 ```
 
-Return the timestamp of the project creation time - e.g. `1534431600`
+返回本项目创建时间的时间戳 - e.g. `1534431600`
 
-Return type `uint256`
+返回类型 `uint256`
 
 #### balanceOf
 
@@ -95,9 +95,9 @@ Return type `uint256`
 function balanceOf(address _owner) public view returns (uint256 _balance)
 ```
 
-Return the FAS number owned by the address `_owner` - e.g. `15`
+返回地址为`_owner`的账户所持有的Fas数量 - e.g. `15`
 
-Return type `uint256`
+返回类型 `uint256`
 
 #### ownerOf
 
@@ -105,9 +105,9 @@ Return type `uint256`
 function ownerOf(uint256 _FasId) public view returns (address _owner)
 ```
 
-Return the address of the FAS owner for `_FasId` - e.g. `0xca35b7d915458ef540ade6068dfe2f44e8fa733c`
+返回Fas ID为`_FasId`的Fas的持有者地址 - e.g. `0xca35b7d915458ef540ade6068dfe2f44e8fa733c`
 
-Return type `address`
+返回类型 `address`
 
 #### exists
 
@@ -115,7 +115,7 @@ Return type `address`
 function exists(uint256 _FasId) public view returns (bool)
 ```
 
-Confirm the validity for the Fas with the FAS ID `_FasId`
+确认Fas ID为`_FasId`的Fas是否为有效Fas
 
 #### allOwnedFas
 
@@ -123,9 +123,9 @@ Confirm the validity for the Fas with the FAS ID `_FasId`
 function allOwnedFas(address _owner) public view returns (uint256[] _allOwnedFasList)
 ```
 
-Return the list of FAS ID for the FAS owned by the address `_owner` - e.g. `[0,1,2,3,4]`
+返回持有者地位为`_owner`的全部的Fas ID列表 - e.g. `[0,1,2,3,4]`
 
-Return type `uint256[]`
+返回类型 `uint256[]`
 
 #### getTransferRecords
 
@@ -133,9 +133,9 @@ Return type `uint256[]`
 function getTransferRecords(uint256 _FasId) public view returns (address[] _preOwners)
 ```
 
-Return the list of transferor addresses for the FAS with FAS ID `_FasId` and arrange the list as the order of transferring - e.g. `[0xCA35b7d915458EF540aDe6068dFe2F44E8fa733c,0x14723A09ACff6D2A60DcdF7aA4AFf308FDDC160C]`
+返回Fas ID为`_FasId`的Fas的转让者地址名单，并按转让顺序排列 - e.g. `[0xCA35b7d915458EF540aDe6068dFe2F44E8fa733c,0x14723A09ACff6D2A60DcdF7aA4AFf308FDDC160C]`
 
-Return type `address[]`
+返回类型 `address[]`
 
 #### transfer
 
@@ -143,9 +143,9 @@ Return type `address[]`
 function transfer(address _to, uint256[] _FasId) public
 ```
 
-Transfer the FAS with FAS ID `_FasId` (the number of FAS transferred here can be multiple by a list of FAS ID) to the address `_to`，and trigger the event `Transfer`
+向地址为`_to`的持有者转让自己持有的Fas ID为`_FasId`的复数Fas，且必须触发`Transfer`事件
 
-If the transferor attempts to send a FAS that does belong to him or a FAS that does not exist, the function will be broke.
+如果发送者无足够的Fas可以转让，则退出该函数
 
 #### createVote
 
@@ -153,9 +153,9 @@ If the transferor attempts to send a FAS that does belong to him or a FAS that d
 function createVote() public payable returns (uint256 _voteId)
 ```
 
-Creat a voting event，and return the Vote ID `_voteId`
+创建投票事件，并返回Vote ID `_voteId`
 
-Return type `uint256`
+返回类型 `uint256`
 
 #### vote
 
@@ -163,7 +163,7 @@ Return type `uint256`
 function vote(uint256 _voteId, uint256 _vote_status_value) public
 ```
 
-Vote for the event with the Vote ID `_voteId`. In the voting event，value `0` for `_vote_status_value` means affirmative vote，value `1` for `_vote_status_value` means dissenting vote，and value `2` means abstaining.
+进行投票，根据Vote ID `_voteId`，在该ID的投票事件中进行投票，`_vote_status_value`为`0`代表赞同，为`1`代表反对，为`2`代表弃权
 
 #### getVoteResult
 
@@ -171,9 +171,9 @@ Vote for the event with the Vote ID `_voteId`. In the voting event，value `0` f
 function getVoteResult(uint256 _voteId) public payable returns (bool result)
 ```
 
-Obtain the voting result of the event with Vote ID `_voteId`. return `true` if the voting event got successful, and return `false` if not.
+获取投票事件的Vote ID为`_voteId`的投票结果，返回`true`为成功，返回`false`为失败
 
-Return type `bool`
+返回类型 `bool`
 
 #### dividend
 
@@ -181,7 +181,7 @@ Return type `bool`
 function dividend(address _token_owner) public
 ```
 
-Distribute bonus from the wallet address `_token_owner` to all the Fas owners.
+分配红利，从地址为`_token_owner`的地址中，向所有的Fas持有者的地址分配红利
 
 ### Event
 
@@ -191,7 +191,7 @@ Distribute bonus from the wallet address `_token_owner` to all the Fas owners.
 event Transfer(address indexed _from, address indexed _to, uint256 indexed _FasId);
 ```
 
-Will be triggered when transferring Fas, including transferring 0 FAS
+转让Fas时必须触发，包括转让值为0
 
 #### Vote
 
@@ -199,7 +199,7 @@ Will be triggered when transferring Fas, including transferring 0 FAS
 event Vote(uint256 _voteId);
 ```
 
-Will be triggered when creating a voting event
+创建投票事件时必须触发
 
 ## Test Cases
 
