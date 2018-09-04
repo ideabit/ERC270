@@ -1,11 +1,14 @@
 # ERC270技术文档
 
-## Version : 0.1.0
+## Version : 0.1.5
 
 - [ERC270技术文档](#erc270%E6%8A%80%E6%9C%AF%E6%96%87%E6%A1%A3)
-    - [Version : 0.1.0](#version--010)
-    - [概述](#%E6%A6%82%E8%BF%B0)
-    - [ERC270接口](#erc270%E6%8E%A5%E5%8F%A3)
+    - [Version : 0.1.5](#version--015)
+    - [created: 2018-09-04](#created-2018-09-04)
+    - [Simple Summary](#simple-summary)
+    - [Abstract](#abstract)
+    - [Motivation](#motivation)
+    - [Specification](#specification)
         - [Methods](#methods)
             - [name](#name)
             - [FasNum](#fasnum)
@@ -24,39 +27,25 @@
         - [Event](#event)
             - [Transfer](#transfer)
             - [Vote](#vote)
+    - [Test Cases](#test-cases)
+        - [Test Cases are available at](#test-cases-are-available-at)
+    - [Copyright](#copyright)
 
-## 概述
+## created: 2018-09-04
 
-ERC270是一个股权标准协议，通过智能合约，来解决以太坊区块链中的项目股权分配的问题。通过ERC270协议，使用者可以查询项目基本信息以及股权信息，追踪股权转让历史以及转让股权。使用者也可以扩展该协议，与ERC20标准合约结合，增加售卖持有股权，以及依据股权分配情况，分配股权收益等功能。
+## Simple Summary
 
-## ERC270接口
+An equity agreement standard.
 
-ERC270作为一个股权标准协议，提供了要实现ERC270股权标准协议时必须实现的接口，接口定义如下：
+## Abstract
 
-``` js
-contract ERC270Interface {
-    function name() external view returns (string _name);
-    function FasNum() external view returns (uint256 _FasNum);
-    function owner() external view returns (address _owner);
-    function createTime() external view returns (uint256 _createTime);
-    function balanceOf(address _owner) public view returns (uint256 _balance);
-    function ownerOf(uint256 _FasId) public view returns (address _owner);
-    function exists(uint256 _FasId) public view returns (bool);
-    function allOwnedFas(address _owner) public view returns (uint256[] _allOwnedFasList);
-    function getTransferRecords(uint256 _FasId) public view returns (address[] _preOwners);
-    function transfer(address _to, uint256[] _FasId) public;
-    function createVote() public payable returns (uint256 _voteId);
-    function vote(uint256 _voteId, uint256 _vote_status_value) public;
-    function getVoteResult(uint256 _voteId) public payable returns (bool result);
-    function dividend(address _token_owner) public;
+The following is a standard that allows for the implementation of equity allocation and related functions within smart contracts. This standard allows for the functions of querying basic project and equity information, track the history of equity transfers, transfer equity, and distribute profits based on equity allocation.
 
-    event Transfer(
-        address indexed _from,
-        address indexed _to,
-        uint256 indexed _FasId
-    );
-}
-```
+## Motivation
+
+This standard interface allows any project to tokenize their equity, to be protected by the security of Ethereum, and to be used by applications, enabling the transfer of equity from wallet to wallet.
+
+## Specification
 
 ### Methods
 
@@ -211,3 +200,13 @@ event Vote(uint256 _voteId);
 ```
 
 创建投票事件时必须触发
+
+## Test Cases
+
+### Test Cases are available at
+
+- https://github.com/ideabit/ERC270/blob/master/contract/ERC270BasicContract.sol
+
+## Copyright
+
+Copyright and related rights waived via [CC0](https://creativecommons.org/publicdomain/zero/1.0/).
