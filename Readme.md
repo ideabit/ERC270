@@ -1,10 +1,10 @@
-# ERC270 Technical Documentation
+# ERC-1384 Technical Documentation
 
 ## Version : 0.1.5
 
-- [ERC270 Technical Documentation](#erc270-technical-documentation)
+- [ERC-1384 Technical Documentation](#erc-1384-technical-documentation)
     - [Version : 0.1.5](#version--015)
-    - [created: 2018-09-04](#created-2018-09-04)
+    - [created: 2018-09-05](#created-2018-09-05)
     - [Simple Summary](#simple-summary)
     - [Abstract](#abstract)
     - [Motivation](#motivation)
@@ -33,7 +33,7 @@
         - [Test Cases are available at](#test-cases-are-available-at)
     - [Copyright](#copyright)
 
-## created: 2018-09-04
+## created: 2018-09-05
 
 ## Simple Summary
 
