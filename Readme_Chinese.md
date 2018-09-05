@@ -1,10 +1,10 @@
-# ERC270技术文档
+# ERC-1384技术文档
 
 ## Version : 0.1.5
 
-- [ERC270技术文档](#erc270%E6%8A%80%E6%9C%AF%E6%96%87%E6%A1%A3)
+- [ERC-1384技术文档](#erc-1384%E6%8A%80%E6%9C%AF%E6%96%87%E6%A1%A3)
     - [Version : 0.1.5](#version--015)
-    - [created: 2018-09-04](#created-2018-09-04)
+    - [created: 2018-09-05](#created-2018-09-05)
     - [Simple Summary](#simple-summary)
     - [Abstract](#abstract)
     - [Motivation](#motivation)
@@ -31,7 +31,7 @@
         - [Test Cases are available at](#test-cases-are-available-at)
     - [Copyright](#copyright)
 
-## created: 2018-09-04
+## created: 2018-09-05
 
 ## Simple Summary
 

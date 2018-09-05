@@ -1,9 +1,9 @@
 pragma solidity ^0.4.24;
 /**
 * Version: 0.1.0
-*  The ERC-270 is an Equity Agreement Standard used for smart contracts on Ethereum
+*  The ERC-1384 is an Equity Agreement Standard used for smart contracts on Ethereum
 * blockchain for project equity allocation.
-*  The current ERC270 agreement standard version is 0.1.0, which includes the basic 
+*  The current ERC-1384 agreement standard version is 0.1.0, which includes the basic 
 * information of the project query, equity creation, confirmation of equity validity,
 * equity transfer, record of equity transfer and other functions.
 */
@@ -43,7 +43,7 @@ contract ERC20 {
 }
 
 
-contract ERC270Interface {
+contract ERC1384Interface {
     function name() external view returns (string _name);
     function FasNum() external view returns (uint256 _FasNum);
     function owner() external view returns (address _owner);
@@ -94,7 +94,7 @@ contract Owned {
 }
 
 
-contract ERC270BasicContract is ERC270Interface, Owned {
+contract ERC1384BasicContract is ERC1384Interface, Owned {
     using SafeMath for uint256;
 
     // Project Name
