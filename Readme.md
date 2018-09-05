@@ -2,13 +2,14 @@
 
 ## Version : 0.1.5
 
-- [ERC270 technical documentation](#erc270%E6%8A%80%E6%9C%AF%E6%96%87%E6%A1%A3)
+- [ERC270 Technical Documentation](#erc270-technical-documentation)
     - [Version : 0.1.5](#version--015)
     - [created: 2018-09-04](#created-2018-09-04)
     - [Simple Summary](#simple-summary)
     - [Abstract](#abstract)
     - [Motivation](#motivation)
     - [Specification](#specification)
+        - [FAS](#fas)
         - [Methods](#methods)
             - [name](#name)
             - [FasNum](#fasnum)
@@ -46,6 +47,10 @@ The following is a standard that allows for the implementation of equity allocat
 This standard interface allows any project to tokenize their equity, to be protected by the security of Ethereum, and to be used by applications, enabling the transfer of equity from wallet to wallet.
 
 ## Specification
+
+### FAS
+
+The Fair and Autonomous Stakeholder-equity protocol (FAS) is a standardized smart contract designed to tokenize how equity works. By implementing this with blockchain technology, precisely smart contracts, it enables tokenized equity to operate on a fair and autonomous basis, allowing the execution of any process to be transparent and pre-determined by the contract. This equity agreement standard allows for the querying of project and equity information, transfer of equity, distribution of profits and voting-related actions.
 
 ### Methods
 
