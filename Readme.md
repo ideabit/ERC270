@@ -28,6 +28,7 @@
         - [Event](#event)
             - [Transfer](#transfer)
             - [Vote](#vote)
+    - [Backwards Compatibility](#backwards-compatibility)
     - [Test Cases](#test-cases)
         - [Test Cases are available at](#test-cases-are-available-at)
     - [Copyright](#copyright)
@@ -205,6 +206,10 @@ event Vote(uint256 _voteId);
 ```
 
 Will be triggered when creating a voting event
+
+## Backwards Compatibility
+
+The equity agreement standard is compatible with ERC-20.
 
 ## Test Cases
 
