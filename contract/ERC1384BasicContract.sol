@@ -1,9 +1,10 @@
-pragma solidity ^0.4.24;
+pragma solidity >=0.4.21 <0.6.0;
 /**
-* Version: 0.1.0
+* Version: 0.1.1
+* Updated to work with 5.0 Solidity release
 *  The ERC-1384 is an Equity Agreement Standard used for smart contracts on Ethereum
 * blockchain for project equity allocation.
-*  The current ERC-1384 agreement standard version is 0.1.0, which includes the basic 
+*  The current ERC-1384 agreement standard version is 0.1.0, which includes the basic
 * information of the project query, equity creation, confirmation of equity validity,
 * equity transfer, record of equity transfer and other functions.
 */
@@ -23,7 +24,7 @@ library SafeMath {
         c = a * b;
         require(a == 0 || c / a == b);
     }
-    
+
     function div(uint256 a, uint256 b) internal pure returns (uint256 c) {
         require(b > 0);
         c = a / b;
@@ -32,9 +33,9 @@ library SafeMath {
 
 
 contract ERC20 {
-    function totalSupply() public constant returns (uint);
-    function balanceOf(address tokenOwner) public constant returns (uint balance);
-    function allowance(address tokenOwner, address spender) public constant returns (uint remaining);
+    function totalSupply() public view returns (uint);
+    function balanceOf(address tokenOwner) public view returns (uint balance);
+    function allowance(address tokenOwner, address spender) public view returns (uint remaining);
     function transfer(address to, uint tokens) public returns (bool success);
     function approve(address spender, uint tokens) public returns (bool success);
     function transferFrom(address from, address to, uint tokens) public returns (bool success);
@@ -44,16 +45,16 @@ contract ERC20 {
 
 
 contract ERC1384Interface {
-    function name() external view returns (string _name);
+    function name() external view returns (string memory _name);
     function FasNum() external view returns (uint256 _FasNum);
     function owner() external view returns (address _owner);
     function createTime() external view returns (uint256 _createTime);
     function balanceOf(address _owner) public view returns (uint256 _balance);
     function ownerOf(uint256 _FasId) public view returns (address _owner);
     function exists(uint256 _FasId) public view returns (bool);
-    function allOwnedFas(address _owner) public view returns (uint256[] _allOwnedFasList);
-    function getTransferRecords(uint256 _FasId) public view returns (address[] _preOwners);
-    function transfer(address _to, uint256[] _FasId) public;
+    function allOwnedFas(address _owner) public view returns (uint256[] memory _allOwnedFasList);
+    function getTransferRecords(uint256 _FasId) public view returns (address[] memory _preOwners);
+    function transfer(address _to, uint256[] memory _FasId) public;
     function createVote() public payable returns (uint256 _voteId);
     function vote(uint256 _voteId, uint256 _vote_status_value) public;
     function getVoteResult(uint256 _voteId) public payable returns (bool result);
@@ -117,7 +118,7 @@ contract ERC1384BasicContract is ERC1384Interface, Owned {
     /**
     * @dev Constructor function
     */
-    constructor(string _project_name, address _token_0x_address) public {
+    constructor(string memory _project_name, address _token_0x_address) public {
         proejct_name = _project_name;
         project_fas_number = 100;
         project_create_time = block.timestamp;
@@ -144,7 +145,7 @@ contract ERC1384BasicContract is ERC1384Interface, Owned {
     * @dev Gets the project name
     * @return string representing the project name
     */
-    function name() external view returns (string) {
+    function name() external view returns (string memory) {
         return proejct_name;
     }
 
@@ -241,7 +242,7 @@ contract ERC1384BasicContract is ERC1384Interface, Owned {
     * @param _owner address to query the balance of
     * @return the FasId list of owners
     */
-    function allOwnedFas(address _owner) public view returns (uint256[]) {
+    function allOwnedFas(address _owner) public view returns (uint256[] memory) {
         uint256 _ownedFasCount = ownedFasCount[_owner];
         uint256 j = 0;
 
@@ -337,7 +338,7 @@ contract ERC1384BasicContract is ERC1384Interface, Owned {
     * @param _FasId uint256 ID of the Fas
     * @return address of previous owners
     */
-    function getTransferRecords(uint256 _FasId) public view returns (address[]) {
+    function getTransferRecords(uint256 _FasId) public view returns (address[] memory) {
         return transferRecords[_FasId];
     }
 
@@ -347,7 +348,7 @@ contract ERC1384BasicContract is ERC1384Interface, Owned {
     * @param _to address to receive the ownership of the given Fas ID
     * @param _FasId uint256 ID of the Fas to be transferred
     */
-    function transferForOwnerShip(address _project_owner,address _to, uint256[] _FasId) internal{
+    function transferForOwnerShip(address _project_owner,address _to, uint256[] memory _FasId) internal{
         for(uint i = 0; i < _FasId.length; i++)
         {
             require(isOwner(_project_owner, _FasId[i]));
@@ -366,7 +367,7 @@ contract ERC1384BasicContract is ERC1384Interface, Owned {
     * @param _to address to receive the ownership of the given Fas ID
     * @param _FasId uint256 ID of the Fas to be transferred
     */
-    function transfer(address _to, uint256[] _FasId) public{
+    function transfer(address _to, uint256[] memory _FasId) public{
         for(uint i = 0; i < _FasId.length; i++)
         {
             require(isOwner(msg.sender, _FasId[i]));
@@ -477,7 +478,7 @@ contract ERC1384BasicContract is ERC1384Interface, Owned {
     // ------------------------------------------------------------------------
     // Don't accept ETH
     // ------------------------------------------------------------------------
-    function () public payable {
+    function () external payable {
         revert();
     }
 }
